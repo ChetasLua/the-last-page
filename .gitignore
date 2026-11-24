@@ -1,0 +1,8 @@
+.mm/
+cache/
+out/
+dist/
+qa/
+__pycache__/
+*.pyc
+.DS_Store

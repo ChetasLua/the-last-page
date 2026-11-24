@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>The Last Page</title>
+<link rel="icon" href="data:,">
+<style>
+html,body{margin:0;height:100%;background:#000;overflow:hidden}
+#frame{position:fixed;inset:0;margin:auto;width:min(100vw,calc(94vh*1.85));width:min(100vw,calc(94dvh*1.85));aspect-ratio:1.85;background:#000;overflow:hidden}
+#film{display:block;width:100%;height:100%;object-fit:cover;background:#000;opacity:0;transition:opacity .5s linear}
+.on #film{opacity:1}
+.on{cursor:none}
+#play{position:fixed;inset:0;margin:auto;width:76px;height:76px;padding:0;border:0;background:none;color:#d8cdb8;opacity:.5;cursor:pointer;transition:opacity .6s ease;-webkit-tap-highlight-color:transparent}
+#play:hover{opacity:.95}
+#play:focus{outline:none}
+#play:focus-visible{opacity:.95;outline:1px solid #6b6356;outline-offset:8px}
+#play svg{width:100%;height:100%;display:block}
+.on #play{opacity:0;pointer-events:none}
+#play[disabled]{opacity:.16;cursor:default}
+</style>
+</head>
+<body>
+<div id="frame"><video id="film" playsinline preload="auto" disablepictureinpicture></video></div>
+<button id="play" type="button" aria-label="Play" disabled><svg viewBox="0 0 76 76" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path stroke-width="1.5" d="M38.6 3.4c18.700-.6 34.200 14.700 34.300 33.900.200 19.800-14.600 35.600-34.400 35.700C19 73.100 3.400 58.100 3.300 38.400 3.200 19.700 16.700 5.600 34.200 3.800"/><path stroke-width="1.6" d="M30.400 24.300c7.400 3.900 14.400 8.300 21.600 13.600-6.900 4.700-13.900 9.400-21.500 13.700-.500-9.100-.600-18.200-.1-27.300z"/></svg></button>
+<script id="data" type="text/plain">/*FILM*/</script>
+<script>
+(function(){
+  var v=document.getElementById('film'),b=document.getElementById('play'),d=document.getElementById('data'),root=document.documentElement;
+  function ready(){b.disabled=false}
+  function decode(){
+    var s=d.textContent.trim();d.textContent='';
+    var parts=[],step=4*262144;
+    for(var i=0;i<s.length;i+=step){
+      var bin=atob(s.slice(i,i+step)),u=new Uint8Array(bin.length);
+      for(var k=0;k<bin.length;k++)u[k]=bin.charCodeAt(k);
+      parts.push(u);
+    }
+    s=null;
+    v.src=URL.createObjectURL(new Blob(parts,{type:'video/mp4'}));
+    v.load();ready();
+  }
+  function play(){
+    var p=v.play();root.classList.add('on');
+    if(p&&p.catch)p.catch(function(){root.classList.remove('on')});
+  }
+  b.addEventListener('click',function(){if(v.ended)v.currentTime=0;play()});
+  document.getElementById('frame').addEventListener('click',function(){
+    if(!root.classList.contains('on'))return;
+    if(v.paused)play();else{v.pause();root.classList.remove('on')}
+  });
+  addEventListener('keydown',function(e){
+    if(e.code==='Space'&&document.activeElement!==b){e.preventDefault();if(b.disabled)return;if(v.paused){if(v.ended)v.currentTime=0;play()}else{v.pause();root.classList.remove('on')}}
+    if(e.key==='f'||e.key==='F'){if(document.fullscreenElement)document.exitFullscreen();else if(root.requestFullscreen)root.requestFullscreen()}
+  });
+  v.addEventListener('ended',function(){root.classList.remove('on')});
+  setTimeout(decode,30);
+})();
+</script>
+</body>
+</html>
